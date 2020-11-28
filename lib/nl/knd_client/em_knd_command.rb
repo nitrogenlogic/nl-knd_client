@@ -7,32 +7,6 @@ module NL
       include EM::Deferrable
       attr_reader :linecount, :lines, :name, :message
 
-      # Reads command debugging configuration from the KNC_DEBUG_CMD
-      # environment variable.  Called automatically by .debug_cmd?.
-      def self.init_debug_cmd
-        dbg = ENV['KNC_DEBUG_CMD']
-
-        case dbg
-        when 'true'
-          @@debug_cmd = true
-
-        when 'false'
-          @@debug_cmd = false
-
-        when String
-          @@debug_cmd = dbg.split(',').map(&:strip)
-
-        else
-          @@debug_cmd = false
-        end
-      end
-
-      # Returns true if the given command should have debugging info logged.
-      def self.debug_cmd?(cmdname)
-        init_debug_cmd if @@debug_cmd.nil?
-	@@debug_cmd == true || (@@debug_cmd.is_a?(Array) && @@debug_cmd.include?(cmdname))
-      end
-
       # Initializes a deferred 'name' command, removing commas from arguments
       # (KND command arguments cannot contain commas)
       def initialize(name, *args)
@@ -45,7 +19,7 @@ module NL
 
         timeout 10
 
-        log "Command #{@name} Initialized" if EMKndCommand.debug_cmd?(@name)
+        log "Command #{@name} Initialized" if EMKndClient.debug_cmd?(@name)
       end
 
       # Called by EMKndClient when a success line is received
@@ -53,7 +27,7 @@ module NL
       def ok_line(message)
         @message = message
 
-        log "Command #{@name} OK - #{message}" if EMKndCommand.debug_cmd?(@name)
+        log "Command #{@name} OK - #{message}" if EMKndClient.debug_cmd?(@name)
 
         case @name
         when "zones", "help"
@@ -72,7 +46,7 @@ module NL
       def err_line(message)
         @message = message
 
-        log "Command #{@name} ERR - #{message}" if EMKndCommand.debug_cmd?(@name)
+        log "Command #{@name} ERR - #{message}" if EMKndClient.debug_cmd?(@name)
 
         fail self
       end

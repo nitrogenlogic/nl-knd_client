@@ -55,15 +55,15 @@ module NL
       # kvpairs is a string, it is parsed with kin_kvp().  If it is a Hash,
       # its keys are used as the zone definition.
       def initialize kvpairs, normalize=true
-        bench 'Zone.new' do
+        EMKndClient.bench 'Zone.new' do
           super nil
           if kvpairs.is_a? String
-            bench 'Zone.new string' do
+            EMKndClient.bench 'Zone.new string' do
               merge! kvpairs.kin_kvp
               normalize = false
             end
           elsif kvpairs.is_a? Hash
-            bench 'Zone.new hash' do
+            EMKndClient.bench 'Zone.new hash' do
               merge! kvpairs
             end
           else
@@ -76,9 +76,9 @@ module NL
 
       # Converts known keys into their expected types.
       def normalize!
-        bench 'Zone.normalize!' do
+        EMKndClient.bench 'Zone.normalize!' do
           if has_key?('version') && self['version'].to_i < 2
-            log "Converting version #{self['version']} zone to version #{ZONE_VERSION}"
+            EMKndClient.log "Converting version #{self['version']} zone to version #{ZONE_VERSION}"
             self['xmin'] &&= self['xmin'].to_f * 1000.0
             self['ymin'] &&= self['ymin'].to_f * 1000.0
             self['zmin'] &&= self['zmin'].to_f * 1000.0
