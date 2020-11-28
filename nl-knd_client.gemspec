@@ -28,6 +28,8 @@ Gem::Specification.new do |spec|
     'ext/kinutils/extconf.rb'
   ]
 
+  spec.add_runtime_dependency 'nl-fast_png'
+
   spec.add_development_dependency 'rake-compiler'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rspec'

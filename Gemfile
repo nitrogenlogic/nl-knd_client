@@ -4,3 +4,5 @@ source "https://rubygems.org"
 gemspec
 
 gem "rake", "~> 12.0"
+
+gem 'nl-fast_png', git: 'git@github.com:nitrogenlogic/nl-fast_png.git'

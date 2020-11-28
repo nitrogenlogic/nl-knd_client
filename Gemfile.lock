@@ -1,7 +1,14 @@
+GIT
+  remote: git@github.com:nitrogenlogic/nl-fast_png.git
+  revision: efb78371293a3a2787884cee0d3abf5e6c7d8d15
+  specs:
+    nl-fast_png (0.0.0.pre.usegit)
+
 PATH
   remote: .
   specs:
     nl-knd_client (0.0.0.pre.usegit)
+      nl-fast_png
 
 GEM
   remote: https://rubygems.org/
@@ -35,6 +42,7 @@ PLATFORMS
 
 DEPENDENCIES
   eventmachine
+  nl-fast_png!
   nl-knd_client!
   pry
   rake (~> 12.0)
