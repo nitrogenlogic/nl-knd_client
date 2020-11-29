@@ -5,6 +5,7 @@ module NL
       # Switched to integer millimeters in version 2
       ZONE_VERSION = 2
 
+      # TODO: This should be a constant, not a class variable
       @@param_names = {
         'occupied' => 'Occupied',
 
@@ -141,6 +142,8 @@ module NL
       # Computes the range for the given parameter.  Returns nil if param is
       # not a valid zone parameter, the parameter's range is unknown, or the
       # given parameter has no range.
+      #
+      # TODO: this should probably just be a constant Hash
       def range param
         case param
         when 'xmin', 'xmax'
