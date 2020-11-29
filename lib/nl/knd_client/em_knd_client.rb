@@ -566,6 +566,7 @@ module NL
         # this command
         do_command 'zones' do |cmd|
           EMKndClient.bench('get_zones') do
+            old_zones = @@zones
             zonelist = {}
             cmd.lines.each do |line|
               zone = Zone.new line
@@ -574,11 +575,13 @@ module NL
               zonelist[zone['name']] = zone
             end
 
+            @@zones = zonelist
+
             # Notify protocol plugin callbacks about new zones
             EMKndClient.bench('get_zones_callbacks') do
               unless @cbs.empty?
                 zonelist.each do |k, v|
-                  if !@@zones.include? k
+                  if !old_zones.include? k
                     log "Zone #{k} added in get_zones"
                     call_cbs :add, v
                   elsif v['occupied'] != @@zones[k]['occupied']
@@ -586,7 +589,7 @@ module NL
                     call_cbs :change, v
                   end
                 end
-                @@zones.each do |k, v|
+                old_zones.each do |k, v|
                   if !zonelist.include? k
                     log "Zone #{k} removed in get_zones"
                     call_cbs :del, v
@@ -595,7 +598,6 @@ module NL
               end
             end
 
-            @@zones = zonelist
             @@occupied = cmd.message.gsub(/.*, ([0-9]+) occupied.*/, '\1').to_i if cmd.message
           end
 
