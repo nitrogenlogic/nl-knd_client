@@ -3,6 +3,18 @@
 Client library for interacting with the Nitrogen Logic [KND][0] (Kinematic
 Network Daemon) server, which provides zone-based data from a Kinect.
 
+There are two clients provided:
+
+- `NL::KndClient::EMKndClient` &ndash; a complex, older, but full-featured
+  asynchronous client based on EventMachine.  This is only available if the
+  EventMachine gem is already present in your application's dependencies.
+- `NL::KndClient::SimpleKndClient` &ndash; a simple, newer, quick-and-dirty
+  `Thread`-based client that is easier to use, but does not support all KND
+  features.
+
+Some data decoding functions are also provided as a C extension in
+`NL::KndClient::Kinutils`.
+
 ## License
 
 NL::KndClient is &copy;2011-2020 Mike Bourgeous.

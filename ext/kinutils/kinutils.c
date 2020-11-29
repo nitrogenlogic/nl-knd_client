@@ -25,6 +25,11 @@ struct unpack_info {
 	size_t len;
 };
 
+struct kvp_info {
+	VALUE hash;
+	unsigned int symbolize:1;
+};
+
 // The KinUtils Ruby module
 VALUE KinUtils = Qnil;
 static rb_encoding *utf8;
@@ -307,35 +312,56 @@ VALUE rb_unescape_modify(int argc, VALUE *args, VALUE self)
 // Parsing callback for rb_kvp
 static void kvp_hashcb(void *data, char *key, char *strvalue, struct nl_variant value)
 {
-	VALUE hash = *(VALUE *)data;
-	VALUE rbkey = rb_str_new2(key);
+	struct kvp_info *info = data;
+	VALUE rbkey;
+
+	if (info->symbolize) {
+		rbkey = ID2SYM(rb_intern(key));
+	} else {
+		rbkey = rb_str_new2(key);
+	}
 
 	switch(value.type) {
 		case INTEGER:
-			rb_hash_aset(hash, rbkey, INT2NUM(value.value.integer));
+			rb_hash_aset(info->hash, rbkey, INT2NUM(value.value.integer));
 			break;
 
 		case FLOAT:
-			rb_hash_aset(hash, rbkey, rb_float_new(value.value.floating));
+			rb_hash_aset(info->hash, rbkey, rb_float_new(value.value.floating));
 			break;
 
 		case STRING:
-			rb_hash_aset(hash, rbkey, rb_str_new2(value.value.string));
+			rb_hash_aset(info->hash, rbkey, rb_str_new2(value.value.string));
 			break;
 
 		default:
-			rb_hash_aset(hash, rbkey, rb_str_new2(strvalue));
+			rb_hash_aset(info->hash, rbkey, rb_str_new2(strvalue));
 			break;
 	}
 }
 
-// Parses a key-value pair string into a hash of string->string values
-VALUE rb_kvp(VALUE self)
+// Parses a key-value pair string into a hash.  The :symbolize_keys option may
+// be specified to use symbols instead of strings for the hash keys.
+VALUE rb_kvp(int argc, VALUE *argv, VALUE self)
 {
-	VALUE hash;
+	VALUE hash = rb_hash_new();
 
-	hash = rb_hash_new();
-	nl_parse_kvp(RSTRING_PTR(self), nl_kvp_wrapper, &(struct nl_kvp_wrap){kvp_hashcb, &hash});
+	if (argc < 0 || argc > 1 || (argc == 1 && !RB_TYPE_P(argv[0], T_HASH))) {
+		rb_raise(rb_eArgError, "Call with no parameters, or with an options Hash.");
+	}
+
+	VALUE symbolize = Qnil;
+
+	if (argc == 1) {
+		symbolize = rb_hash_lookup(argv[0], ID2SYM(rb_intern("symbolize_keys")));
+	}
+
+	struct kvp_info info = {
+		.hash = hash,
+		.symbolize = RB_TEST(symbolize),
+	};
+
+	nl_parse_kvp(RSTRING_PTR(self), nl_kvp_wrapper, &(struct nl_kvp_wrap){kvp_hashcb, &info});
 
 	return hash;
 }
@@ -379,7 +405,7 @@ void Init_kinutils()
 	rb_define_method(rb_cString, "kin_unescape", rb_unescape, -1);
 	rb_define_method(rb_cString, "kin_unescape!", rb_unescape_modify, -1);
 
-	rb_define_method(rb_cString, "kin_kvp", rb_kvp, 0);
+	rb_define_method(rb_cString, "kin_kvp", rb_kvp, -1);
 
 	// TODO: Add xworld,yworld,lut,reverse_lut,unpack_to_world/unpack_to_8 functions
 }

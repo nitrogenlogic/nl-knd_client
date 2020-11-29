@@ -70,6 +70,14 @@ RSpec.describe(NL::KndClient::Kinutils) do
       expect('a=-3.e.1'.kin_kvp).to eq({ 'a' => '-3.e.1' })
       expect('a=1.e0'.kin_kvp).to eq({ 'a' => '1.e0' })
     end
+
+    it 'uses symbols for keys when :symbolize_keys is true' do
+      expect('a=1 b=two c=3.125'.kin_kvp(symbolize_keys: true)).to eq({ a: 1, b: 'two', c: 3.125 })
+    end
+
+    it 'raises an error if something other than an options hash is passed as a parameter' do
+      expect { 'a=1'.kin_kvp('not a hash') }.to raise_error(ArgumentError)
+    end
   end
 
   describe 'String#kin_unescape' do
