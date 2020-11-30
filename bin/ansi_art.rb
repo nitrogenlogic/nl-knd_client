@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+# Quick and dirty demo of the SimpleKndClient that displays live depth data as
+# ANSI art.
+#
+# (C)2020 Mike Bourgeous
 
 require 'bundler/setup'
 
@@ -32,11 +36,13 @@ begin
       }
     }
 
-    puts img.each_slice(15).map(&:first).map { |z| z.each_slice(11).map(&:first) }.map { |z| z.map { |v| [0, v[:z] - 200].max / 450 } }.map { |z| z.map { |v| [".", '-', "\e[1m-\e[0m", 'o', "\e[1mo\e[0m", 'O', "\e[1mO\e[0m"].reverse[v] }.join }
+    charmap = [".", '-', "\e[1m-\e[0m", 'o', "\e[1mo\e[0m", 'O', "\e[1mO\e[0m"].reverse
+
+    puts img.each_slice(15).map(&:first).map { |z| z.each_slice(11).map(&:first) }.map { |z| z.map { |v| [0, v[:z] - 200].max / 450 } }.map { |z| z.map { |v| charmap[v] }.join }
 
     STDOUT.write "\e[H"
   end
 ensure
   knd&.close
-  STDOUT.puts "\e[45H"
+  puts "\e[45H\e[0m"
 end
