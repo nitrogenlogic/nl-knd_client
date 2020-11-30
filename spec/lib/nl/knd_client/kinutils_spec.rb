@@ -107,4 +107,8 @@ RSpec.describe(NL::KndClient::Kinutils) do
   describe '.plot_front' do
     pending
   end
+
+  pending '.xworld'
+  pending '.yworld'
+  pending '.unpack11_to_16_lut'
 end
