@@ -91,11 +91,11 @@ VALUE rb_unpack11_to_16_lut(VALUE self, VALUE data)
 	return internal_unpack11_to_16(1, data);
 }
 
-VALUE plot_linear_blocking(void *data)
+void *plot_linear_blocking(void *data)
 {
 	struct plot_info *info = data;
 	plot_linear(info->in, info->out);
-	return Qnil;
+	return NULL;
 }
 
 // Ruby function to plot perspective view of linear depth data.  Input:
@@ -127,11 +127,11 @@ VALUE rb_plot_linear(VALUE self, VALUE data)
 	return outbuf;
 }
 
-VALUE plot_overhead_blocking(void *data)
+void *plot_overhead_blocking(void *data)
 {
 	struct plot_info *info = data;
 	plot_overhead(info->in, info->out);
-	return Qnil;
+	return NULL;
 }
 
 // Ruby function to plot overhead view of depth data.  Input: 640x480x16bit
@@ -163,11 +163,11 @@ VALUE rb_plot_overhead(VALUE self, VALUE data)
 	return outbuf;
 }
 
-VALUE plot_side_blocking(void *data)
+void *plot_side_blocking(void *data)
 {
 	struct plot_info *info = data;
 	plot_side(info->in, info->out);
-	return Qnil;
+	return NULL;
 }
 
 // Ruby function to plot side view of depth data.  Input: 640x480x16bit
@@ -200,11 +200,11 @@ VALUE rb_plot_side(VALUE self, VALUE data)
 	return outbuf;
 }
 
-VALUE plot_front_blocking(void *data)
+void *plot_front_blocking(void *data)
 {
 	struct plot_info *info = data;
 	plot_front(info->in, info->out);
-	return Qnil;
+	return NULL;
 }
 
 // Ruby function to plot front view of depth data.  Input: 640x480x16bit
