@@ -46,6 +46,19 @@ module NL
         @socket = nil
       end
 
+      # Sends the getdepth command to KND to request async delivery of a single
+      # depth frame.
+      def request_depth
+        @socket.puts('getdepth')
+      end
+
+      # Sends the subdepth command to KND to request continuous async delivery
+      # of depth frames.  The optional +count+ will cause only that number of
+      # frames to be delivered.
+      def subscribe_depth(count = nil)
+        @socket.puts("subdepth#{count && " #{count}"}")
+      end
+
       # Waits for and then returns depth data.
       def get_depth
         data = nil
@@ -54,7 +67,7 @@ module NL
         cb = ->(d) { data = d; t.wakeup }
         on_zone('! DEPTH', &cb)
 
-        @socket.puts('getdepth')
+        request_depth
         sleep(1)
 
         raise "Data wasn't set within 1 second" if data.nil?
