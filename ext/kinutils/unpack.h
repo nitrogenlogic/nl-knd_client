@@ -26,7 +26,25 @@
 extern int ku_depth_lut[2048];
 
 // Unpacks and inverts 8 11-bit pixels (11 bytes) from in and stores them as
+// LSB-aligned 16-bit values in out (16 bytes), which can be used directly as
+// indices in ku_depth_lut.
+UNPACK_INLINE void unpack11_to_16_lut(const uint8_t *in, uint16_t *out)
+{
+	out[0] = ((in[0] << 3) | (in[1] >> 5));
+	out[1] = (((in[1] & 0x1f) << 6) | (in[2] >> 2));
+	out[2] = (((in[2] & 0x03) << 9) | (in[3] << 1) | (in[4] >> 7));
+	out[3] = (((in[4] & 0x7f) << 4) | (in[5] >> 4));
+	out[4] = (((in[5] & 0x0f) << 7) | (in[6] >> 1));
+	out[5] = (((in[6] & 0x01) << 10) | (in[7] << 2) | (in[8] >> 6));
+	out[6] = (((in[8] & 0x3f) << 5) | (in[9] >> 3));
+	out[7] = (((in[9] & 0x07) << 8) | in[10]);
+}
+
+// Unpacks and inverts 8 11-bit pixels (11 bytes) from in and stores them as
 // MSB-aligned 16-bit values in out (16 bytes)
+//
+// The range is scaled and inverted to look presentable in a 16-bit sRGB PNG
+// image.  To convert back to LUT indices
 UNPACK_INLINE void unpack11_to_16(const uint8_t *in, uint16_t *out)
 {
 	out[0] = 65535 - (((in[0] << 3) | (in[1] >> 5)) << 5);

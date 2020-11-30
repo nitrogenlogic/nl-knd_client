@@ -23,7 +23,7 @@ void ku_init_lut()
 	for(i = 0; i < 2047; i++) {
 		ku_depth_lut[i] = (int)(0.1236f * tanf(i / 2842.5f + 1.1863f) * 1000.0f);
 	}
-	ku_depth_lut[2047] = 1048576;
+	ku_depth_lut[2047] = 1048576; // 2047 is returned by the sensor for shadowed or undetectable pixels
 }
 
 // Finds the closest entry in the depth look-up table to the given world-space

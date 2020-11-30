@@ -23,6 +23,7 @@ struct unpack_info {
 	const uint8_t *in;
 	uint16_t *out;
 	size_t len;
+	unsigned int lut_range:1;
 };
 
 struct kvp_info {
@@ -39,15 +40,21 @@ void *unpack_blocking(void *data)
 	struct unpack_info *info = data;
 	size_t i, o;
 
-	for(i = 0, o = 0; i < info->len; i += 11, o += 8) {
-		unpack11_to_16(info->in + i, info->out + o);
+	if (info->lut_range) {
+		for(i = 0, o = 0; i < info->len; i += 11, o += 8) {
+			unpack11_to_16_lut(info->in + i, info->out + o);
+		}
+	} else {
+		for(i = 0, o = 0; i < info->len; i += 11, o += 8) {
+			unpack11_to_16(info->in + i, info->out + o);
+		}
 	}
 
 	return NULL;
 }
 
-// Ruby function to unpack 11-bit depth data to 16-bit left-aligned values
-VALUE rb_unpack11_to_16(VALUE self, VALUE data)
+// Ruby function to unpack 11-bit depth data to 16-bit left-aligned or right-aligned values.
+static VALUE internal_unpack11_to_16(int lut_range, VALUE data)
 {
 	size_t len, newlen;
 	VALUE outbuf;
@@ -64,12 +71,24 @@ VALUE rb_unpack11_to_16(VALUE self, VALUE data)
 
 	rb_thread_call_without_gvl(
 			unpack_blocking,
-			&(struct unpack_info){.in = (uint8_t *)RSTRING_PTR(data), .out = (uint16_t *)RSTRING_PTR(outbuf), .len = len},
+			&(struct unpack_info){.in = (uint8_t *)RSTRING_PTR(data), .out = (uint16_t *)RSTRING_PTR(outbuf), .len = len, .lut_range = !!lut_range},
 			NULL,
 			NULL
 			);
 
 	return outbuf;
+}
+
+// Unpacks to 16-bit left-aligned values (for presentation, or passing into plot_linear)
+VALUE rb_unpack11_to_16(VALUE self, VALUE data)
+{
+	return internal_unpack11_to_16(0, data);
+}
+
+// Unpacks to 16-bit right-aligned values (for direct use in DEPTH_LUT)
+VALUE rb_unpack11_to_16_lut(VALUE self, VALUE data)
+{
+	return internal_unpack11_to_16(1, data);
 }
 
 VALUE plot_linear_blocking(void *data)
@@ -409,6 +428,7 @@ void Init_kinutils()
 	rb_define_global_const("ESCAPE_IF_QUOTED", INT2FIX(ESCAPE_IF_QUOTED));
 
 	rb_define_module_function(KinUtils, "unpack11_to_16", rb_unpack11_to_16, 1);
+	rb_define_module_function(KinUtils, "unpack11_to_16_lut", rb_unpack11_to_16_lut, 1);
 	rb_define_module_function(KinUtils, "plot_linear", rb_plot_linear, 1);
 	rb_define_module_function(KinUtils, "plot_overhead", rb_plot_overhead, 1);
 	rb_define_module_function(KinUtils, "plot_side", rb_plot_side, 1);
@@ -431,5 +451,5 @@ void Init_kinutils()
 	rb_ary_freeze(lut_array);
 	rb_define_const(KinUtils, "DEPTH_LUT", lut_array);
 
-	// TODO: Add xworld,yworld,reverse_lut,unpack_to_world/unpack_to_8 functions
+	// TODO: Add reverse_lut,unpack_to_world/unpack_to_8 functions
 }
