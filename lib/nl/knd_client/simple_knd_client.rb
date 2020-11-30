@@ -79,7 +79,6 @@ module NL
 
             when 'DEPTH'
               num_bytes = line.gsub(/\A[^0-9]*(\d+)[^0-9]*\z/, '\1').to_i
-              puts "\n\n\n\n\e[1;33m=========== DEPTH line #{num_bytes} ============\n\n\n\n"
               data = @socket.read(num_bytes)
               @callbacks['! DEPTH']&.each do |cb|
                 cb.call(data) rescue puts "Error calling depth callback: #{MB::Sound::U.syntax($!.inspect)}"
