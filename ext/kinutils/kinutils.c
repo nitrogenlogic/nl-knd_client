@@ -366,6 +366,19 @@ VALUE rb_kvp(int argc, VALUE *argv, VALUE self)
 	return hash;
 }
 
+// Converts X in pixels 0..639 and Z in world-space millimeters from the sensor
+// into horizontal world-space millimeters from the sensor centerline.
+VALUE ext_xworld(VALUE self, VALUE xpix, VALUE zw)
+{
+	return INT2FIX(ku_xworld(NUM2INT(xpix), NUM2INT(zw)));
+}
+
+// Converts Y in pixels 0..480 and Z in world-space millimeters from the sensor
+// into vertical world-space millimeters from the sensor centerline.
+VALUE ext_yworld(VALUE self, VALUE ypix, VALUE zw)
+{
+	return INT2FIX(ku_yworld(NUM2INT(ypix), NUM2INT(zw)));
+}
 
 void Init_kinutils()
 {
@@ -401,11 +414,22 @@ void Init_kinutils()
 	rb_define_module_function(KinUtils, "plot_side", rb_plot_side, 1);
 	rb_define_module_function(KinUtils, "plot_front", rb_plot_front, 1);
 
-	// TODO: Move to a different extension
 	rb_define_method(rb_cString, "kin_unescape", rb_unescape, -1);
 	rb_define_method(rb_cString, "kin_unescape!", rb_unescape_modify, -1);
 
 	rb_define_method(rb_cString, "kin_kvp", rb_kvp, -1);
 
-	// TODO: Add xworld,yworld,lut,reverse_lut,unpack_to_world/unpack_to_8 functions
+	// 3D perspective projection
+	rb_define_module_function(KinUtils, "xworld", ext_xworld, 2);
+	rb_define_module_function(KinUtils, "yworld", ext_yworld, 2);
+
+	// Look-up table
+	VALUE lut_array = rb_ary_new2(2048);
+	for (int i = 0; i < 2048; i++) {
+		rb_ary_store(lut_array, i, INT2FIX(ku_depth_lut[i]));
+	}
+	rb_ary_freeze(lut_array);
+	rb_define_const(KinUtils, "DEPTH_LUT", lut_array);
+
+	// TODO: Add xworld,yworld,reverse_lut,unpack_to_world/unpack_to_8 functions
 }

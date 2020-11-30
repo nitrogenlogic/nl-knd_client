@@ -10,34 +10,8 @@
 #define UNPACK_INLINE
 #include "unpack.h"
 
-// TODO: Put ku_xworld, ku_yworld, lut into a library of addons, or submit as patches
-// to libfreenect.
-
 // Depth look-up table (translates depth sample into world-space millimeters).
 int ku_depth_lut[2048];
-
-// Converts x in pixels and z in world millimeters to x in world millimeters.
-static int ku_xworld(int x, int zw)
-{
-	// tan 28 ~= .53171 (1089 ~= .53171 * 2048)
-	// 0xcccd is the ~reciprocal of 10 (factor of W/2=320)
-	// Add 2**34 (0x400000000) for rounding before shift
-	// Shift right by 35:
-	//   11 bits for tangent (* 2048 above)
-	//   19 bits for reciprocal multiplication by 1/10 (factor of W/2=320)
-	//   5 bits for division by 32 (other factor of W/2=320)
-	//
-	// In total, with an overly generous maximum range of +/-16384mm (15
-	// bits), and an overhead of 35 bits due to arithmetic, 50 bits are
-	// needed for the calculation.
-	return (((int64_t)zw * (320 - x) * 1089 * 0xcccd) + 0x400000000) >> 35;
-}
-
-// Converts y in pixels and z in world millimeters to y in world millimeters.
-static int ku_yworld(int y, int zw)
-{
-	return ku_xworld(y + (640 - 480) / 2, zw);
-}
 
 // Initializes the depth look-up table.
 // Copied from the knd daemon code, based on:
