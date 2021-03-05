@@ -102,6 +102,7 @@ module NL
       @@connected = false
       @@instance = nil
       @@fps = 0
+      @@occupied = 0
 
       # The time of the last connection/disconnection event
       @@connection_time = Time.now
